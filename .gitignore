@@ -1,0 +1,6 @@
+.DS_Store
+Thumbs.db
+*.mp4
+*.webm
+*.gif
+!docs/*.gif

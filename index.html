@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Stillflow</title>
+  <meta name="description" content="Make still photos move. Draw where things should flow, freeze what should stay still, export a seamless loop. Runs entirely in your browser.">
+  <meta name="theme-color" content="#0e0f11">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-select" viewBox="0 0 24 24"><path d="M5 3.5 18.5 11l-6.2 1.6L9.4 19z"/></symbol>
+    <symbol id="i-motion" viewBox="0 0 24 24"><path d="M3 15.5c2.6-4.6 5.4-4.6 8 0s5.4 4.6 8 0"/><path d="M15.6 7.6 20 8.4l-.9 4.3"/><path d="M4 9.5c3-3.8 8.5-4.6 15.6-1.3"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0c0 5.2-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></symbol>
+    <symbol id="i-freeze" viewBox="0 0 24 24"><path d="M12 2.5v19M3.8 7.25l16.4 9.5M20.2 7.25 3.8 16.75"/><path d="m9.5 4 2.5 2 2.5-2M9.5 20l2.5-2 2.5 2M4 11.1l3.1-.6-1-3M20 12.9l-3.1.6 1 3M18 7.5l-1 3 3.1.6M6 16.5l1-3-3.1-.6"/></symbol>
+    <symbol id="i-thaw" viewBox="0 0 24 24"><path d="M8.5 20.5h11"/><path d="m4.6 13.9 8.5-8.5a2 2 0 0 1 2.8 0l3.2 3.2a2 2 0 0 1 0 2.8l-7.3 7.3a4 4 0 0 1-2.8 1.2H7.4a2 2 0 0 1-1.4-.6l-1.4-1.4a2 2 0 0 1 0-2.8z"/><path d="m9.5 9.2 5.3 5.3"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7.5 5.2v13.6a.8.8 0 0 0 1.2.7l11-6.8a.8.8 0 0 0 0-1.4l-11-6.8a.8.8 0 0 0-1.2.7z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+    <symbol id="i-redo" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="9.5" r="1.8"/><path d="m21 15.5-4.6-4.6a1.5 1.5 0 0 0-2.1 0L5 20"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3.5v11.5M7 10.5l5 5 5-5"/><path d="M4 17v1.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V17"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6.5 10h.01M10 10h.01M13.5 10h.01M17 10h.01M7.5 14h9"/></symbol>
+  </defs>
+</svg>
+
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/icon.svg" alt="" width="22" height="22">
+      <span class="wordmark">Stillflow</span>
+    </div>
+
+    <div class="topbar-group">
+      <button class="btn" id="btn-open"><svg class="ico"><use href="#i-image"/></svg><span>Open photo</span></button>
+      <button class="btn ghost hide-narrow" id="btn-sample">Try the sample</button>
+    </div>
+
+    <div class="topbar-spacer"></div>
+
+    <div class="topbar-group">
+      <button class="btn ghost icon-btn" id="btn-undo" title="Undo (Ctrl+Z)" disabled><svg class="ico"><use href="#i-undo"/></svg></button>
+      <button class="btn ghost icon-btn" id="btn-redo" title="Redo (Ctrl+Shift+Z)" disabled><svg class="ico"><use href="#i-redo"/></svg></button>
+      <button class="btn ghost icon-btn show-narrow" id="btn-panel" title="Settings"><svg class="ico"><use href="#i-sliders"/></svg></button>
+    </div>
+    <button class="btn primary" id="btn-export" disabled><svg class="ico"><use href="#i-download"/></svg><span>Export</span></button>
+  </header>
+
+  <nav class="toolbar" id="toolbar" aria-label="Tools">
+    <button class="tool" data-tool="select" data-tip="Select" data-key="V" aria-label="Select"><svg class="ico"><use href="#i-select"/></svg></button>
+    <button class="tool" data-tool="motion" data-tip="Motion path" data-key="A" aria-label="Motion path"><svg class="ico"><use href="#i-motion"/></svg></button>
+    <button class="tool" data-tool="pin" data-tip="Pin" data-key="P" aria-label="Pin"><svg class="ico"><use href="#i-pin"/></svg></button>
+    <button class="tool" data-tool="freeze" data-tip="Freeze brush" data-key="F" aria-label="Freeze brush"><svg class="ico"><use href="#i-freeze"/></svg></button>
+    <button class="tool" data-tool="thaw" data-tip="Unfreeze" data-key="E" aria-label="Unfreeze"><svg class="ico"><use href="#i-thaw"/></svg></button>
+  </nav>
+
+  <main class="stage" id="stage">
+    <canvas id="gl"></canvas>
+    <canvas id="overlay"></canvas>
+
+    <div class="hint" id="hint" hidden></div>
+
+    <div class="empty" id="empty">
+      <div class="empty-card">
+        <h1>Make a photo <em>move.</em></h1>
+        <p>Draw where things should flow, freeze what should stay still, and get a seamless loop. Your photo never leaves this browser.</p>
+        <div class="empty-actions">
+          <button class="btn primary big" id="empty-open"><svg class="ico"><use href="#i-image"/></svg>Choose a photo</button>
+          <button class="btn big" id="empty-sample">Try the sample</button>
+        </div>
+        <p class="empty-small">or drop an image anywhere, or paste one with Ctrl+V</p>
+        <ol class="steps">
+          <li><svg class="ico"><use href="#i-motion"/></svg><span><b>Draw paths</b> along water, clouds, smoke</span></li>
+          <li><svg class="ico"><use href="#i-freeze"/></svg><span><b>Freeze</b> anything that should hold still</span></li>
+          <li><svg class="ico"><use href="#i-download"/></svg><span><b>Export</b> an MP4 or GIF that loops forever</span></li>
+        </ol>
+      </div>
+      <p class="no-webgl" id="no-webgl" hidden>Stillflow needs WebGL 2, and this browser doesn't seem to have it. A recent Chrome, Edge, Firefox or Safari will work.</p>
+    </div>
+
+    <div class="dropzone" id="dropzone"><span>Drop to open</span></div>
+
+    <div class="transport" id="transport" hidden>
+      <button class="btn ghost icon-btn" id="btn-play" title="Play / pause (Space)"><svg class="ico"><use href="#i-pause"/></svg></button>
+      <button class="btn ghost icon-btn" id="btn-compare" title="Hold to see the original (C)"><svg class="ico"><use href="#i-eye"/></svg></button>
+      <span class="divider"></span>
+      <button class="btn ghost small" id="btn-fit" title="Fit to screen (0)">Fit</button>
+      <span class="zoom" id="zoom-label">100%</span>
+    </div>
+  </main>
+
+  <aside class="panel" id="panel">
+    <section class="section">
+      <h3>Animation</h3>
+      <div class="field">
+        <label for="speed">Speed</label><output id="speed-out"></output>
+        <input type="range" id="speed" min="0" max="3" step="0.05" value="1">
+      </div>
+      <div class="field">
+        <label for="cycle">Loop length</label><output id="cycle-out"></output>
+        <input type="range" id="cycle" min="1" max="8" step="0.5" value="3">
+      </div>
+      <p class="help">Longer loops pulse less but stretch the picture more. Somewhere between 2 and 4 seconds suits most photos.</p>
+    </section>
+
+    <section class="section" id="tool-section">
+      <h3 id="tool-title">Motion path</h3>
+      <div class="field" data-for="motion">
+        <label for="opt-reach">Reach</label><output id="opt-reach-out"></output>
+        <input type="range" id="opt-reach" min="5" max="400" step="1">
+      </div>
+      <div class="field" data-for="pin">
+        <label for="opt-pin">Pin size</label><output id="opt-pin-out"></output>
+        <input type="range" id="opt-pin" min="5" max="300" step="1">
+      </div>
+      <div class="field" data-for="freeze thaw">
+        <label for="opt-brush">Brush size</label><output id="opt-brush-out"></output>
+        <input type="range" id="opt-brush" min="2" max="500" step="1">
+      </div>
+      <div class="field" data-for="freeze thaw">
+        <label for="opt-soft">Softness</label><output id="opt-soft-out"></output>
+        <input type="range" id="opt-soft" min="0" max="1" step="0.01">
+      </div>
+      <p class="help" id="tool-help"></p>
+    </section>
+
+    <section class="section" id="sel-section" hidden>
+      <h3 id="sel-title">Selected path</h3>
+      <div class="field" data-sel="flow">
+        <label for="sel-speed">Speed</label><output id="sel-speed-out"></output>
+        <input type="range" id="sel-speed" min="0.1" max="3" step="0.05">
+      </div>
+      <div class="field" data-sel="flow">
+        <label for="sel-reach">Reach</label><output id="sel-reach-out"></output>
+        <input type="range" id="sel-reach" min="5" max="400" step="1">
+      </div>
+      <div class="field" data-sel="pin">
+        <label for="sel-pin">Size</label><output id="sel-pin-out"></output>
+        <input type="range" id="sel-pin" min="5" max="300" step="1">
+      </div>
+      <div class="row-buttons">
+        <button class="btn" id="sel-reverse" data-sel="flow">Reverse direction</button>
+        <button class="btn danger" id="sel-delete">Delete</button>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3>View</h3>
+      <label class="switch"><span>Show guides <kbd>G</kbd></span><input type="checkbox" id="show-guides" checked></label>
+      <label class="switch"><span>Tint frozen areas</span><input type="checkbox" id="show-frozen" checked></label>
+    </section>
+
+    <section class="section section-foot">
+      <button class="btn ghost" id="btn-shortcuts"><svg class="ico"><use href="#i-keyboard"/></svg>Shortcuts</button>
+      <button class="btn ghost danger-text" id="btn-clear">Clear all</button>
+    </section>
+  </aside>
+</div>
+
+<dialog class="dialog" id="export-dialog">
+  <div class="dialog-head">
+    <h2>Export</h2>
+    <button class="btn ghost icon-btn" data-close aria-label="Close"><svg class="ico"><use href="#i-close"/></svg></button>
+  </div>
+  <div class="dialog-body">
+    <div class="seg" role="radiogroup" aria-label="Format">
+      <label><input type="radio" name="format" value="video" checked><span>Video <small id="video-kind">MP4</small></span></label>
+      <label><input type="radio" name="format" value="gif"><span>GIF</span></label>
+    </div>
+    <label class="row"><span>Size</span><select id="ex-size"></select></label>
+    <label class="row" data-video><span>Length</span><select id="ex-length"></select></label>
+    <label class="row" data-video><span>Frame rate</span>
+      <select id="ex-fps">
+        <option value="24">24 fps</option>
+        <option value="30" selected>30 fps</option>
+        <option value="60">60 fps</option>
+      </select>
+    </label>
+    <p class="note" id="ex-note"></p>
+    <div class="progress" id="ex-progress" hidden>
+      <div class="bar"><span id="ex-bar"></span></div>
+      <span id="ex-status">Starting…</span>
+    </div>
+  </div>
+  <div class="dialog-foot">
+    <button class="btn ghost" id="ex-cancel">Cancel</button>
+    <button class="btn primary" id="ex-go"><svg class="ico"><use href="#i-download"/></svg>Export</button>
+  </div>
+</dialog>
+
+<dialog class="dialog" id="keys-dialog">
+  <div class="dialog-head">
+    <h2>Shortcuts</h2>
+    <button class="btn ghost icon-btn" data-close aria-label="Close"><svg class="ico"><use href="#i-close"/></svg></button>
+  </div>
+  <div class="dialog-body">
+    <dl class="keys">
+      <dt><kbd>V</kbd></dt><dd>Select</dd>
+      <dt><kbd>A</kbd></dt><dd>Motion path</dd>
+      <dt><kbd>P</kbd></dt><dd>Pin</dd>
+      <dt><kbd>F</kbd></dt><dd>Freeze brush (hold <kbd>Alt</kbd> to erase)</dd>
+      <dt><kbd>E</kbd></dt><dd>Unfreeze brush</dd>
+      <dt><kbd>[</kbd> <kbd>]</kbd></dt><dd>Brush, pin or reach size</dd>
+      <dt><kbd>Space</kbd></dt><dd>Tap to play / pause, hold and drag to pan</dd>
+      <dt><kbd>C</kbd></dt><dd>Hold to see the original photo</dd>
+      <dt><kbd>G</kbd></dt><dd>Show / hide guides</dd>
+      <dt><kbd>0</kbd></dt><dd>Fit to screen</dd>
+      <dt><kbd>Del</kbd></dt><dd>Delete selected path or pin</dd>
+      <dt><kbd>Ctrl</kbd> <kbd>Z</kbd></dt><dd>Undo (add <kbd>Shift</kbd> to redo)</dd>
+      <dt>Wheel</dt><dd>Zoom. Middle mouse or two fingers to pan.</dd>
+    </dl>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="file-input" accept="image/*" hidden>
+
+<script src="src/util.js"></script>
+<script src="src/history.js"></script>
+<script src="src/flowfield.js"></script>
+<script src="src/renderer.js"></script>
+<script src="src/mask.js"></script>
+<script src="src/editor.js"></script>
+<script src="src/sample.js"></script>
+<script src="src/gif.js"></script>
+<script src="src/mp4.js"></script>
+<script src="src/export.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
